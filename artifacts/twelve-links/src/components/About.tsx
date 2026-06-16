@@ -244,9 +244,19 @@ export default function About() {
                 transition={{ delay: i * 0.1 }}
                 className="bg-card/50 border border-white/5 p-6 rounded-xl text-center hover:border-[#00FF88]/30 transition-colors group"
               >
-                <div className={`w-24 h-24 mx-auto rounded-full bg-gradient-to-br ${member.color} mb-6 flex items-center justify-center shadow-lg group-hover:scale-105 transition-transform`}>
-                  <User className="w-10 h-10 text-white/50" />
+                {/* ── Updated Photo Circle Container ── */}
+                <div className={`w-24 h-24 mx-auto rounded-full bg-gradient-to-br ${member.color} mb-6 flex items-center justify-center shadow-lg group-hover:scale-105 transition-transform overflow-hidden relative`}>
+                  {member.image ? (
+                    <img 
+                      src={member.image} 
+                      alt={member.name} 
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <User className="w-10 h-10 text-white/50" />
+                  )}
                 </div>
+                
                 <h3 className="text-xl font-bold text-white mb-1">{member.name}</h3>
                 <p className="text-[#00FF88] text-sm uppercase tracking-wider mb-4">{member.role}</p>
                 <p className="text-gray-400 text-sm">{member.bio}</p>
