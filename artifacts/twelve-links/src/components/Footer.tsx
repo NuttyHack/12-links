@@ -18,6 +18,31 @@ export default function Footer() {
     };
   }, [activeDoc]);
 
+  // Inject Webpushr setup cleanly using environment variable string mapping to bypass compiler checks
+  useEffect(() => {
+    const pushKey = import.meta.env.VITE_WEBPUSHR_KEY;
+    if (pushKey && typeof window !== "undefined" && !("webpushr" in window)) {
+      const w = window as any;
+      w.webpushr = w.webpushr || function () {
+        (w.webpushr.q = w.webpushr.q || []).push(arguments);
+      };
+      
+      const js = document.createElement("script");
+      js.id = "webpushr-jssdk";
+      js.async = true;
+      js.src = "https://cdn.webpushr.com/app.min.js";
+      
+      const firstScript = document.getElementsByTagName("script")[0];
+      if (firstScript && firstScript.parentNode) {
+        firstScript.parentNode.insertBefore(js, firstScript);
+      } else {
+        document.head.appendChild(js);
+      }
+      
+      w.webpushr('setup', { 'key': pushKey });
+    }
+  }, []);
+
   return (
     <footer className="bg-card border-t border-white/10 pt-16 pb-8 relative z-10">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -84,101 +109,40 @@ export default function Footer() {
             </ul>
           </div>
           
-       import { useEffect } from "react";
+          {/* ── Subscription Form ── */}
+          <div>
+            <h4 className="text-white font-bold mb-6">Subscribe</h4>
+            <p className="text-gray-400 text-sm mb-4">Get updates on our platform and opportunities.</p>
+            <form 
+              className="flex gap-2" 
+              onSubmit={(e) => {
+                e.preventDefault();
+                const w = window as any;
+                const formEl = e.currentTarget;
+                const emailInput = formEl.querySelector('input[type="email"]') as HTMLInputElement;
+                
+                if (emailInput && emailInput.value && typeof w.webpushr === "function") {
+                  w.webpushr('email', emailInput.value);
+                  w.webpushr('showPrompt');
+                }
+              }}
+            >
+              <input 
+                type="email" 
+                required
+                placeholder="Email address" 
+                className="bg-background border border-white/10 rounded-md px-3 py-2 text-sm text-white focus:outline-none focus:border-[#00FF88]/50 w-full" 
+              />
+              <button 
+                type="submit" 
+                className="bg-[#00FF88] text-black px-4 py-2 rounded-md text-sm font-bold uppercase hover:bg-[#00FF88]/80 transition-colors shrink-0"
+              >
+                Join
+              </button>
+            </form>
+          </div>
+        </div>
 
-export default function SubscriptionForm() {
-  useEffect(() => {
-    // This safely injects Webpushr without triggering any strict compiler errors
-    if (typeof window !== "undefined" && !("webpushr" in window)) {
-      const w = window as any;
-      w.webpushr = w.webpushr || function () {
-        (w.webpushr.q = w.webpushr.q || []).push(arguments);
-      };
-      
-      const js = document.createElement("script");
-      js.id = "webpushr-jssdk";
-      js.async = true;
-      js.src = "https://cdn.webpushr.com/app.min.js";
-      
-      const firstScript = document.getElementsByTagName("script")[0];
-      if (firstScript && firstScript.parentNode) {
-        firstScript.parentNode.insertBefore(js, firstScript);
-      } else {
-        document.head.appendChild(js);
-      }
-      
-      w.webpushr('setup', { 'key': 'BPdDd3iPbNoUtUJjQMXFt59J5nevtVku6Jtw67QVfxPV7ozzo2tdUIPEO9Z5t2U3hqBZSGQpCLz4Yp4G4MxYpiM' });
-    }
-  }, []);
-
-  return (
-    <div>
-    import { useEffect } from "react";
-
-export default function SubscriptionForm() {
-  useEffect(() => {
-    // This safely injects Webpushr without triggering any strict compiler errors
-    if (typeof window !== "undefined" && !("webpushr" in window)) {
-      const w = window as any;
-      w.webpushr = w.webpushr || function () {
-        (w.webpushr.q = w.webpushr.q || []).push(arguments);
-      };
-      
-      const js = document.createElement("script");
-      js.id = "webpushr-jssdk";
-      js.async = true;
-      js.src = "https://cdn.webpushr.com/app.min.js";
-      
-      const firstScript = document.getElementsByTagName("script")[0];
-      if (firstScript && firstScript.parentNode) {
-        firstScript.parentNode.insertBefore(js, firstScript);
-      } else {
-        document.head.appendChild(js);
-      }
-      
-      w.webpushr('setup', { 'key': 'BPdDd3iPbNoUtUJjQMXFt59J5nevtVku6Jtw67QVfxPV7ozzo2tdUIPEO9Z5t2U3hqBZSGQpCLz4Yp4G4MxYpiM' });
-    }
-  }, []);
-
-  return (
-    <div>
-      {/* ── Subscription Form ── */}
-      <div>
-        <h4 className="text-white font-bold mb-6">Subscribe</h4>
-        <p className="text-gray-400 text-sm mb-4">Get updates on our platform and opportunities.</p>
-        <form 
-          className="flex gap-2" 
-          onSubmit={(e) => {
-            e.preventDefault();
-            const w = window as any;
-            const formEl = e.currentTarget;
-            const emailInput = formEl.querySelector('input[type="email"]') as HTMLInputElement;
-            
-            if (emailInput && emailInput.value && typeof w.webpushr === "function") {
-              // Connects user email to their browser push token inside Webpushr
-              w.webpushr('email', emailInput.value);
-              // Triggers the opt-in permission banner instantly
-              w.webpushr('showPrompt');
-            }
-          }}
-        >
-          <input 
-            type="email" 
-            required
-            placeholder="Email address" 
-            className="bg-background border border-white/10 rounded-md px-3 py-2 text-sm text-white focus:outline-none focus:border-[#00FF88]/50 w-full" 
-          />
-          <button 
-            type="submit" 
-            className="bg-[#00FF88] text-black px-4 py-2 rounded-md text-sm font-bold uppercase hover:bg-[#00FF88]/80 transition-colors shrink-0"
-          >
-            Join
-          </button>
-        </form>
-      </div>
-    </div>
-  );
-}
         {/* ── Bottom Info Bar ── */}
         <div className="pt-8 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-4 text-xs text-gray-500 font-mono">
           <p>© 2026 12 Links. All rights reserved.</p>
@@ -188,18 +152,18 @@ export default function SubscriptionForm() {
             <span>Johannesburg, ZA</span>
           </div>
           
-          {/* ── SEPARATED BUTTONS WITH HIGHER LAYERING ── */}
+          {/* ── Legal Action Overlay Triggers ── */}
           <div className="flex gap-4 relative z-20">
             <button 
               type="button"
-              onClick={() => { console.log("Privacy clicked"); setActiveDoc("privacy"); }}
+              onClick={() => setActiveDoc("privacy")}
               className="text-gray-400 hover:text-[#00FF88] transition-colors cursor-pointer text-left focus:outline-none py-1 px-2"
             >
               Privacy Policy
             </button>
             <button 
               type="button"
-              onClick={() => { console.log("Terms clicked"); setActiveDoc("terms"); }}
+              onClick={() => setActiveDoc("terms")}
               className="text-gray-400 hover:text-[#00FF88] transition-colors cursor-pointer text-left focus:outline-none py-1 px-2"
             >
               Terms of Service
@@ -208,7 +172,7 @@ export default function SubscriptionForm() {
         </div>
       </div>
 
-      {/* ── FIXED FORCE-ISOLATED FULL-SCREEN OVERLAY VIA HIGHEST Z-INDEX LAYER ── */}
+      {/* ── FORCE-ISOLATED FULL-SCREEN OVERLAY ── */}
       <AnimatePresence mode="wait">
         {activeDoc && (
           <div className="fixed inset-0 z-[99999] flex justify-end overflow-hidden">
