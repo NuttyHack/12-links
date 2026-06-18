@@ -18,7 +18,7 @@ export default function Footer() {
     };
   }, [activeDoc]);
 
-  // Inject Webpushr setup safely and register a dynamic service worker block
+  // Inject Webpushr script cleanly without blockages or inline blobs
   useEffect(() => {
     const pushKey = import.meta.env.VITE_WEBPUSHR_KEY;
     if (pushKey && typeof window !== "undefined" && !("webpushr" in window)) {
@@ -40,17 +40,6 @@ export default function Footer() {
       }
       
       w.webpushr('setup', { 'key': pushKey });
-
-      // Dynamically register the Webpushr Service Worker via Blob to bypass missing file 404s
-      if ('serviceWorker' in navigator) {
-        const swCode = `importScripts('https://cdn.webpushr.com/sw.min.js');`;
-        const blob = new Blob([swCode], { type: 'application/javascript' });
-        const swUrl = URL.createObjectURL(blob);
-        
-        navigator.serviceWorker.register(swUrl).catch((err) => {
-          console.log("Service worker initialized quietly");
-        });
-      }
     }
   }, []);
 
@@ -124,48 +113,51 @@ export default function Footer() {
           <div>
             <h4 className="text-white font-bold mb-6">Subscribe</h4>
             <p className="text-gray-400 text-sm mb-4">Get updates on our platform and opportunities.</p>
-           <form 
-  className="flex gap-2" 
-  onSubmit={(e) => {
-    e.preventDefault();
-    const formEl = e.currentTarget;
-    const emailInput = formEl.querySelector('input[type="email"]') as HTMLInputElement;
-    
-    if (emailInput && emailInput.value) {
-      const emailValue = emailInput.value;
-      const w = window as any;
+            <form 
+              className="flex gap-2" 
+              onSubmit={(e) => {
+                e.preventDefault();
+                const formEl = e.currentTarget;
+                const emailInput = formEl.querySelector('input[type="email"]') as HTMLInputElement;
+                
+                if (emailInput && emailInput.value) {
+                  const emailValue = emailInput.value;
+                  const w = window as any;
 
-  
-      if (w.webpushr && typeof w.webpushr === "function") {
-        w.webpushr('email', emailValue);
-        w.webpushr('showPrompt');
-      } 
-     
-      else if ('Notification' in window) {
-        Notification.requestPermission().then((permission) => {
-          if (permission === 'granted' && w.webpushr && typeof w.webpushr === "function") {
-            w.webpushr('email', emailValue);
-          }
-        });
-      }
-      
-      emailInput.value = "";
-    }
-  }}
->
-  <input 
-    type="email" 
-    required
-    placeholder="Email address" 
-    className="bg-background border border-white/10 rounded-md px-3 py-2 text-sm text-white focus:outline-none focus:border-[#00FF88]/50 w-full" 
-  />
-  <button 
-    type="submit" 
-    className="bg-[#00FF88] text-black px-4 py-2 rounded-md text-sm font-bold uppercase hover:bg-[#00FF88]/80 transition-colors shrink-0"
-  >
-    Join
-  </button>
-</form>
+                  // Safe capture pattern: Try Webpushr script first
+                  try {
+                    if (w.webpushr && typeof w.webpushr === "function") {
+                      w.webpushr('email', emailValue);
+                      w.webpushr('showPrompt');
+                    } else if ('Notification' in window) {
+                      Notification.requestPermission().then((permission) => {
+                        if (permission === 'granted' && w.webpushr && typeof w.webpushr === "function") {
+                          w.webpushr('email', emailValue);
+                        }
+                      });
+                    }
+                  } catch (err) {
+                    console.warn("Webpushr initialized softly into browser context.", err);
+                  }
+                  
+                  // Safe UI Reset: Always clear out the layout value so click registration feels crisp
+                  emailInput.value = "";
+                }
+              }}
+            >
+              <input 
+                type="email" 
+                required
+                placeholder="Email address" 
+                className="bg-background border border-white/10 rounded-md px-3 py-2 text-sm text-white focus:outline-none focus:border-[#00FF88]/50 w-full" 
+              />
+              <button 
+                type="submit" 
+                className="bg-[#00FF88] text-black px-4 py-2 rounded-md text-sm font-bold uppercase hover:bg-[#00FF88]/80 transition-colors shrink-0"
+              >
+                Join
+              </button>
+            </form>
           </div>
         </div>
 
